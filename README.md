@@ -59,7 +59,7 @@ Finished 9 cases!
   Slowest: cuid2
 ```
 
-![benchmark](/Users/orefalo/GitRepositories/awesome-identifiers/benchmark.png)
+![benchmark](benchmark.png)
 
 
 
