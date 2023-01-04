@@ -1,0 +1,31 @@
+{
+  "name": "benchmark_guid",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc && cd build && node src/benchmark.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "benny": "3.7.1",
+    "uuid": "9.0.0",
+    "@paralleldrive/cuid2": "1.0.1",
+    "cuid": "2.1.8",
+    "ksuid": "3.0.0",
+    "id128": "1.6.6",
+    "nanoid": "4.0.0",
+    "@kripod/uuidv7": "0.3.4",
+    "xid-js": "1.0.1"
+  },
+  "devDependencies": {
+    "@types/benchmark": "2.1.2",
+    "@types/cuid": "2.0.1",
+    "@types/node": "*",
+    "@types/uuid": "9.0.0",
+    "typescript": "4.9.4"
+  }
+}
