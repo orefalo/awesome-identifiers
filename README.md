@@ -3,7 +3,7 @@ The idea behind this project is to educate around Global identifiers, their spec
 
 [Click Here to view the comparison table](https://adileo.github.io/awesome-identifiers/)
 
-![comparison table screenshot](screen.jpg "https://adileo.github.io/awesome-identifiers/")
+![comparison table screenshot](screen.png "https://adileo.github.io/awesome-identifiers/")
 
 
 
