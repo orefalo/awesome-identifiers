@@ -1,26 +1,50 @@
 # Globally Unique Identifier Comparison
 
-The idea behind this project is to provide education around GUID.
+GUID seem to be everywhere nowadays, for a very long time I didn't pay too much attention to them. As the number of algorithm grew, I ended in situations where we had to make an implementation choice: which one to use, and why?  
+
+The idea behind this project is to share the little I learned and provide education for others.
+
+Although I carry good foundations, I do not consider my self a cryptography expert, nor a specialist in this domain.
+
+## Why do you need a GUID?
+
+GUID (Globally Unique Identifier) solve three problems typically inherent to three tiers architectures:
+
+1. **Scalability** - growing hardware has its limits, soon or later multiple instances will be required to sustain the load. The problem, running a centralize id generator has a negative impact on performance.
+2. **Resilience** - the ability to run multiple instances of a generator is a great way to improve its availabliity
+3. **Security** - 
+
+## Is Randomness a pledge for security ?
+
+Let me first say that true randomness doesn't exist in software: machines run algorithms that approximate randomess by selecting algorithm and random sources. 
+
+a cryptographically secure pseudorandom number generator (CSPRNG) is a generator with properties that make it suitable for use in [cryptography](https://en.wikipedia.org/wiki/Cryptography).
+
+What are the benefits of 
+
+## What are the typical differences to a sequence?
+
+**Lenght** - GUI are typically 128+ bit
+
+**Format** - GUI are typically stored as strings. The high number of characters allows for a compact sting. Exceptions to this rule are UUIDvX, which can have native binary support in databases.
+
+**Indexing** - Unlike sequences, GUI perform poorly as database indexes due to their randomness.
+
+**Collitions** - a sequence collitions once it overflows, it's quite easy to identify. It can be much harder to detect a GUID collision especially in distributed systems. 
+
+**Compute load** - Incrementing a sequence is trivial, computing the next guid is not.
 
 
 
-Why do you need a GUID?
-
-GUID solve two problems typically inherent to 3 tiers architectures based on a RDMS.
-Scalability
-Security
-
-What are the categories of GUID?
+## What are the categories of GUID?
 
 There are mainly two categories of GUIDs
 
-|                   | Security | Indexing in DB |
-| ----------------- | -------- | -------------- |
-| Security Based    | +++      | --             |
-| Performance Based | --       | +++            |
-|                   |          |                |
-
-
+|                   | Guess Protection | Indexing | Comments |
+| ----------------- | ---------------- | -------- | -------- |
+| Security Based    | +++              | ---      |          |
+| Performance Based | ---              | +++      |          |
+|                   |                  |          |          |
 
 
 
@@ -30,7 +54,7 @@ Axioms used in this document
 
 * The larger the number, the less chances of collisions
 * Performance and security play against each other
-* Database indexes perform poorly on random data
+* 
 
 
 Context
@@ -52,7 +76,7 @@ Context
 
 *Disclaimer, these benchmark are performed against a given architerture (JS/Arm), different implementations/runtimes will likely give different results.*
 
-Always remember, in term of pseudo random generation, **speed is generally not a factor of security**.
+Note: in term of pseudo random generation, **velocity is generally not a factor of security**.
 
 ```
 Platform info:
@@ -101,6 +125,8 @@ Finished 9 cases!
 ![benchmark](benchmark.png)
 
 ## Definitions
+
+*This section helps clarify some of the terms we used in this document.*
 
 ### Collisions
 
