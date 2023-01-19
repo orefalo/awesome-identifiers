@@ -1,82 +1,51 @@
 # Globally Unique Identifier Comparison
 
-GUID seem to be everywhere nowadays, for a very long time I didn't pay too much attention to them. As the number of algorithm grew, I ended in situations where we had to make an implementation choice: which one to use, and why?  
+The idea behind this project is to share the little I learned about GIUD implementations and provide education to others.
 
-The idea behind this project is to share the little I learned and provide education for others.
-
-Although I carry good foundations, I do not consider my self a cryptography expert, nor a specialist in this domain.
+*Disclaimer: Although I carry good security foundations, I do not consider myself a cryptography expert, please take this data with a grain of salt and build your own opinions.*
 
 ## Why do you need a GUID?
 
-GUID (Globally Unique Identifier) solve three problems typically inherent to three tiers architectures:
+GUID (Globally Unique Identifier) are generators for identifiers typically used as primary keys in databases. GUID solve problems typically inherent to three tiers architectures, more precisely:
 
-1. **Scalability** - growing hardware has its limits, soon or later multiple instances will be required to sustain the load. The problem, running a centralize id generator has a negative impact on performance.
-2. **Resilience** - the ability to run multiple instances of a generator is a great way to improve its availabliity
-3. **Security** - 
+1. **Scalability** - growing hardware vertically has its limits, soon or later multiple instances are required to sustain the load. Centralized id generators have a significant (negative) impact on performance. GUID typically allow distributing generators across multiple instances.
+2. **Resilience** - the ability to run multiple instances of a generator is a great way to improve its availabliity and avoid a single point of failure.
+3. **Security** - sequences are trivial to predict, in a distributed world different sources of entropy are used to guarantee uniqueness via a random, difficult to predict (long) string.
 
-## Is Randomness a pledge for security ?
+## How are GUID different from DB SEQUENCES?
 
-Let me first say that true randomness doesn't exist in software: machines run algorithms that approximate randomess by selecting algorithm and random sources. 
+*Sequences is a RDBMS centric solution to ease primary key generation.*
 
-a cryptographically secure pseudorandom number generator (CSPRNG) is a generator with properties that make it suitable for use in [cryptography](https://en.wikipedia.org/wiki/Cryptography).
-
-What are the benefits of 
-
-## What are the typical differences to a sequence?
-
-**Lenght** - GUI are typically 128+ bit
-
-**Format** - GUI are typically stored as strings. The high number of characters allows for a compact sting. Exceptions to this rule are UUIDvX, which can have native binary support in databases.
-
-**Indexing** - Unlike sequences, GUI perform poorly as database indexes due to their randomness.
-
-**Collitions** - a sequence collitions once it overflows, it's quite easy to identify. It can be much harder to detect a GUID collision especially in distributed systems. 
-
-**Compute load** - Incrementing a sequence is trivial, computing the next guid is not.
+|                          |                            DB SEQ                            |                             GUID                             |
+| ------------------------ | :----------------------------------------------------------: | :----------------------------------------------------------: |
+| **Bit length**           |                        32 or 64 bits                         |                     typically 128+ bits                      |
+| **Format**               |                            number                            | Strings, with the exception of UUID, which has native binary support in many databases |
+| **Compute load**         | Trivial +1 but typically runs a single instance or requires coordination | distributed generation & complex: can require IO, random sources and hash calculations, coordination. |
+| **Collisions detection** | Trivial and predictable: a database sequence collisions once it overflows |                    Much harder to predict                    |
+| **Indexing at rest**     | trivial: B-TREE indexes were engineered with sequences in mind | Opaque GUID typically performs poorly as database indexes due to their randomness. Time based GUID encode the date as part of the id to get around this limitation. |
 
 
 
 ## What are the categories of GUID?
 
-There are mainly two categories of GUIDs
+There are mainly two categories of GUIDs: **Opaque** and **time-based**. Time based GUID trade a few bits of entropy to encode a date, they are therefore more efficient to index at the cost of a shorter randomness range.
 
-|                   | Guess Protection | Indexing | Comments |
-| ----------------- | ---------------- | -------- | -------- |
-| Security Based    | +++              | ---      |          |
-| Performance Based | ---              | +++      |          |
-|                   |                  |          |          |
+|                 | Guess Protection                     | Indexing at REST | Implementations           |
+| --------------- | ------------------------------------ | ---------------- | ------------------------- |
+| Opaque GUID     | hard                                 | poor             | ie. Nanoid, CUID2, UUIDv4 |
+| Time-based GUID | Leaks dates for a shorter randomness | good             | ie. ULID, KSUID, UUIDv7   |
 
+## Features, Benefits & Shortcomings
 
+The table below provides a comprehensive comparison between the major GUID implementations.
 
-
-
-Axioms used in this document
-
-* The larger the number, the less chances of collisions
-* Performance and security play against each other
-* 
-
-
-Context
-
-* Risk of collision is not a generality, it is use case driven.
-*  is spead across a multitide of entities
-* The number of records in your tables is a key element to its security
-* Ids are typically generated server side
-* implementation platform -
-* beyond the entropy size, the algorithm plays an important - randoms, hash, salts
-* To date, there are no proofs that an id generation date is conisdered PII data.
-* carefull with these native ids generated in NoSQL db, they are meant for data access, not security
-* An id by itself, no matter how well is it randomized, is only a small component of a proper security architecture.
-
+*Please click on the image to browse an editable version*
 
 ![comparison table screenshot](screen.png "https://docs.google.com/spreadsheets/d/1ZsXBH0z7GOJv3N69QbEDKBZt8IeE0CfRI9vhihV4teo/edit?usp=sharing")
 
 ## Benchmark
 
-*Disclaimer, these benchmark are performed against a given architerture (JS/Arm), different implementations/runtimes will likely give different results.*
-
-Note: in term of pseudo random generation, **velocity is generally not a factor of security**.
+*Disclaimer, these benchmark are performed against a given *architecture* (JS/Arm), different implementations/runtimes will likely give different results.*
 
 ```
 Platform info:
@@ -124,6 +93,39 @@ Finished 9 cases!
 
 ![benchmark](benchmark.png)
 
+
+
+## Thoughts beyond theory
+
+*At this point you should have a pretty good idea of the implementations out there and how they compare.* Let us put things in context.
+
+
+### Are CSPRNG implementation broken?
+
+Some are, but mostly in (old) browsers... and that's a really good news, because ID generation typically takes place **Server side**, where implementations are stable and uniform.
+
+### Is Randomness a pledge for security ?
+
+Machines run algorithms that approximate randomness by selecting algorithms and trusted entropy sources. A cryptographically secure pseudo-random number generator (CSPRNG) is a algorithm with properties that make it suitable for use in cryptography. On Linux for instance, the kernel gathers noisy data from various devices and transfers them to an internal pool of entropy.
+
+Unfortunate, not all cryptography stacks are equal. For instance, old versions of CSPRNG are famous for their poor implementations in JavaScript or PHP. Algorithms such as SHA1 also proved to be unsecured but are still used today in some GUID generators.
+
+While ensuring that a GUID generator is cryptography certified is important, **an ID generator is nothing in view of a proper security architecture.**
+
+### What are the odds for collisions ?
+
+The answer depends on the use case and the specifics of a GUID implementation
+
+With that said, the advertised Math is probably not a good reflection of reality: In an application, a GUID is used to create a multitude of different entities. These entities by definition do not overlap with one another and are therefore in their own *space*, further reducing the chances of collisions.
+
+### Is there a risk to leak the id generation date ?
+
+It all depends on *requirements*.
+
+**From a legal standpoint**, some will argue that the ID generation date is PII data. While this classification could not be validated, a lawyer friend of mine found the argument difficult to defend in a court without considering the complete security architecture.
+
+**From a security standpoint**, it depends on your use case, but very unlikely. Zendesk recently wrote [an article on the topic](https://zendesk.engineering/how-probable-are-collisions-with-ulids-monotonic-option-d604d3ed2de), recommended.
+
 ## Definitions
 
 *This section helps clarify some of the terms we used in this document.*
@@ -142,7 +144,11 @@ In Cryptography, refers to the randomness collected by a system for use in algor
 
 ### Monotonic
 
-A monotonic generator ensures ids are always sorted in order. This term is particularly relevant to ordered guid generators which are based on time.
+A monotonic generator ensures ids are always sorted in order. This term is particularly relevant to date based guid generators which are based on time. For a given instance, at instant T, the next id should always be sorted.
+
+### Opaque
+
+An opaque identifier is one that doesn't expose its inner details or structure.
 
 ### Pagination
 
@@ -155,6 +161,7 @@ A random number generator is predictable if, after observing some of its “rand
 ### Randomness
 
 Randomness (entropy) is the cornerstone of cryptography. The more random the numbers, the more secure the cryptographic system. The challenge then, becomes one of generating true randomness.
+
 
 ## Contribute
 
